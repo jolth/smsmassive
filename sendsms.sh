@@ -3,6 +3,9 @@
 # --sms="Message SMS"
 # --number="send to number"
 #
+# optional argument:
+# --payment=
+#
 # Usage: 
 #       ./sendsms.sh file.csv 'message' --name=1 --device=2 --number=3 --vehicle=4
 #
@@ -40,23 +43,24 @@ done
 
 # Evaluate if arg --name existing 
 if [ ! $name ]; then 
-    echo "Error: arg --name is required"
+    echo -e "Error: arg --name is required\n"
     usage
     exit 1
 fi 
 
 # Evaluate if arg --number existing
 if [ ! $number ]; then
-    echo "Error: arg --number is required"
+    echo -e "Error: arg --number is required\n"
     usage
     exit 1
 fi
 
 if [ ! $placa ]; then
-    echo "Error: arg --placa is required"
+    echo -e "Error: arg --placa is required\n"
     usage
     exit 1
 fi
+
 
 
 function separate {
@@ -129,7 +133,7 @@ function lplaca {
     while read line; do
         placas=$(eval $(echo "awk -F',' '{print \$$placa}'")|sed '/^$/d')
     done < $CSVFILE
-#echo $placas
+    #echo $placas
     count=0
     for i in $placas
     do
@@ -137,6 +141,22 @@ function lplaca {
         count=$((count+1))
     done   
 }
+
+declare -a PAYMENTS
+
+function payment {
+# devuleve la "deuda total" que tenga el Cliente.
+#
+    while read line; do
+        payments=$(eval $(echo "awk -F',' '{print \$$payment}'")|sed '/^$/d')
+    done < $CSVFILE
+    count=0
+    for i in $payments; do
+        PAYMENTS[$count]=$i
+        count=$((count+1))
+    done
+} 
+
 
 if [ -n "$device" ]; then
     echo "Read devices..."
@@ -148,6 +168,19 @@ echo "Read phone numbers..."
 pnumber $line
 echo "Read placas...."
 lplaca $line
+
+# Optional argument     
+if [ $payment ]; then
+    echo -e "Read payment\n"
+    payment $line
+    if ((${#NAMES[*]} != ${#PAYMENTS[*]})); then
+        echo "NAMES: ${#NAMES[*]}"
+        echo "PAYMENTS: ${#PAYMENTS[*]}"
+        echo -e "Error: un usuario no tiene Payment\n"
+        exit 1
+    fi
+fi
+
 
 if (( ${#NAMES[*]} == ${#PHONES[*]} && ${#NAMES[*]} == ${#PLACAS[*]} )); then
     echo -e "Procesando MESSAGE"
@@ -164,8 +197,12 @@ for i in ${!NAMES[*]}
 do
     name=${NAMES[$i]}
     placa=${PLACAS[$i]}
+    payment=${PAYMENTS[$i]}
+
     sms=$(echo $SMSTEXT|sed 's/$name/'$name'/g') 
     sms=$(echo $sms|sed 's/$placa/'$placa'/g') 
+    sms=$(echo $sms|sed 's/$payment/'$payment'/g') 
+    
     chart_count=$(echo $sms|wc -m)
     #printf "%4d [Chart Count: %s] - [%s]:\t" $i $chart_count ${PHONES[$i]}
     #echo $sms
@@ -183,7 +220,7 @@ do
         echo $sms|gammu sendsms TEXT $c
         # Salida de Error: 
         if (( $?!=0 )); then
-            echo "$placa,,$name,,$c,$(date +"%m-%d-%Y %T")," >> send_error.log
+            echo "$placa,,$name,,$c,$payment,$(date +"%m-%d-%Y %T")," >> send_error.log
         fi
         echo -e "\n"
         count=$((count+1))
