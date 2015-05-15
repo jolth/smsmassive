@@ -4,17 +4,7 @@
 # --number="send to number"
 #
 # Usage: 
-#       ./sendsms.sh file.csv --name=1 --device=2 --number=3 --vehicle=4
-#       ./sendsms.sh Usuarios_SMS_RasTree.csv --name=2 --number=3
-#
-#       ./sendsms.sh usuarios.csv 'apreciado $name, Dev Microsystem le informa que su sistema de seguimiento satelidal Rastree esta para pago inmediato.' --name=2 --number=3
-#       ./sendsms.sh familia.csv 'apreciado $name, Dev Microsystem le informa que su sistema de seguimiento satelidal Rastree esta para pago inmediato. Si ya realizo su pago haga caso omiso a este mensaje' --name=2 --number=3
-#
-#       ./sendsms.sh Envio_Masivo_SMS_Usuarios_RasTree_Clientes.csv 'Apreciado $name, le informamos que su sistema de rastreo satelital para el vehiculo $placa esta para pago inmediato. Haga caso omiso si ya realizo su pago' --name=3 --placa=1 --number=5 
-#
-#   ./sendsms.sh Envio_Masivo_SMS_Usuarios_RasTree_Clientes.csv 'Apreciado $name, le informamos que su sistema de rastreo satelital para el vehiculo $placa esta para pago inmediato. Haga caso omiso si ya realizo su pago' --name=3 --placa=1 --number=5
-#
-#   ./sendsms.sh Envio_Masivo_SMS_Usuarios_RasTree_Clientes.csv 'Apreciado $name, le informamos que su servicio Rastree del vehiculo $placa esta para pago inmediato. Haga caso omiso si ya realizo su pago.' --name=3 --placa=1 --number=5
+#       ./sendsms.sh file.csv 'message' --name=1 --device=2 --number=3 --vehicle=4
 #
 # MESAJES:
 #       Apreciado $name, le informamos que su sistema de rastreo satelital para el vehiculo $placa esta para pago inmediato. Haga caso omiso si ya realizo su pago  
@@ -28,10 +18,10 @@
 
 function usage {
     echo -e "Usage:\n
-            ./sendsms.sh file.csv --name=1 --device=2 --number=3 --vehicle=4 \n\n"
+            ./sendsms.sh file.csv 'message' --name=1 --device=2 --number=3 --vehicle=4 \n\n"
     echo -e "fichero csv: \n
             ID,NAME,NUMBER
-            SKP000,filanito de tal,31000000\n"
+            DEV001,first_name last_name,31000000\n"
 }
 
 if [ ${#} -lt 1 ]; then
@@ -48,14 +38,14 @@ for ((i=2; i<$ELEMENTS;i++)); do
     eval $(echo ${args[i]}|awk -F'=' '{print $1"="$2}'|sed 's/-//g')
 done
 
-# evaluate if arg --name existing 
+# Evaluate if arg --name existing 
 if [ ! $name ]; then 
     echo "Error: arg --name is required"
     usage
     exit 1
 fi 
 
-# evaluate if arg --number existing
+# Evaluate if arg --number existing
 if [ ! $number ]; then
     echo "Error: arg --number is required"
     usage
