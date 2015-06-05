@@ -220,7 +220,7 @@ do
         echo $sms|gammu sendsms TEXT $c
         # Salida de Error: 
         if (( $?!=0 )); then
-            echo "$placa,,$name,,$c,$payment,$(date +"%m-%d-%Y %T")," >> send_error.log
+            echo "$placa,,$name,,$c,$payment,$(date +"%d-%m-%Y %T")," >> send_error.log
         fi
         echo -e "\n"
         count=$((count+1))
